@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: "API/Dockerfile"
+    ports:
+      - "5001:5001"
+    depends_on:
+      - redis
+      - seq
+    environment:
+      - REDIS_CONNECTION_STRING=redis:6379
+      - SEQ_URL=http://seq:5341
+    networks:
+      - backend
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - cdn-redis:/data
+    networks:
+      - backend
+
+  seq:
+    image: datalust/seq:latest
+    ports:
+      - "5341:80"
+    environment:
+      - ACCEPT_EULA=Y
+    volumes:
+      - cdn-seq:/data
+    networks:
+      - backend
+
+  # jenkins:
+  #   image: jenkins/jenkins:lts
+  #   ports:
+  #     - "9090:8080"
+  #     - "50000:50000"
+  #   volumes:
+  #     - cdn-data/jenkins:/var/jenkins_home
+  #   networks:
+  #     - backend
+
+volumes:
+  cdn-redis:
+  cdn-seq:
+
+networks:
+  backend:
