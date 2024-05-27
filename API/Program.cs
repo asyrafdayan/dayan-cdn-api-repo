@@ -1,5 +1,6 @@
 using API.Entities.Contexts;
 using API.Interfaces;
+using API.Middleware;
 using API.Models;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,10 @@ builder.Services.AddSwaggerGen();
 // Register services
 builder.Services.AddScoped<IFreelance, FreelanceService>();
 
+// Exception Handler
+builder.Services.AddExceptionHandler<ExceptionMiddleware>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,6 +33,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
