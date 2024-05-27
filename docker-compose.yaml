@@ -11,8 +11,8 @@ services:
       - redis
       - seq
     environment:
-      - SQLITE_DB=Data Source=../DB/dev
-      - REDIS_CONNECTION_STRING=redis:6379
+      - "AppSettings__ConnectionStrings__SQLite=Data Source=../DB/dev"
+      - "AppSettings__ConnectionStrings__Redis=redis:6379"
       - SEQ_URL=http://seq:5341
     networks:
       - backend
