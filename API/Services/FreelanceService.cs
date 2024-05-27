@@ -118,6 +118,9 @@ namespace API.Services
 
             try
             {
+                // Delete from Redis Cache (If it exists)
+                _redisService.DeleteData(RedisKeysConstants.FREELANCER_DETAIL_BY_ID + freelancerId);
+
                 // Fetch freelancer info
                 TblFreelancerMst? freelancerDetail = _context.TblFreelancerMsts.Where(e => e.Id == freelancerId).FirstOrDefault();
 

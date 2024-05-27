@@ -28,6 +28,19 @@ namespace API.Services
             }
         }
 
+        public void DeleteData(string key) 
+        {
+            if (_redisConnection == null || !_redisConnection.IsConnected)
+            {
+                _logger.LogError("Not connected to Redis instance");
+            }
+
+            using (_redisConnection)
+            {
+                _rdb?.KeyDelete(key);
+                _logger.LogInformation($"Key {key} deleted from redis");
+            }
+        }
 
         public T? GetData<T>(string key)
         {
