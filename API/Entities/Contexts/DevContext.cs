@@ -1,26 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using API.Entities.Tables;
+using API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace API.Entities.Contexts;
 
 public partial class DevContext : DbContext
 {
-    public DevContext()
+    private readonly ILogger<DevContext> _logger;
+    private readonly AppSettingsModel _appSettings;
+
+    public DevContext(ILogger<DevContext> logger, IOptions<AppSettingsModel> appSettings)
     {
+        _appSettings = appSettings.Value;
+        _logger = logger;
     }
 
-    public DevContext(DbContextOptions<DevContext> options)
+    public DevContext(DbContextOptions<DevContext> options, ILogger<DevContext> logger, IOptions<AppSettingsModel> appSettings)
         : base(options)
     {
+        _appSettings = appSettings.Value;
+        _logger = logger;
     }
 
     public virtual DbSet<TblFreelancerMst> TblFreelancerMsts { get; set; }
 
     public virtual DbSet<TblSkill> TblSkills { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlite("Data Source=../DB/dev");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlite(_appSettings?.ConnectionStrings?.SQLite);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
