@@ -21,7 +21,12 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult FetchAllFreelancers()
         {
-            return Ok();
+            _logger.LogInformation("Freelancer - Start FetchAllFreelancers");
+
+            ContentResult content = _freelanceService.GetAllFreelancer();
+
+            _logger.LogInformation("Freelancer - Exit FetchAllFreelancers");
+            return content;
         }
 
         [HttpGet("{FreelancerId}")]
@@ -38,7 +43,10 @@ namespace API.Controllers
         [HttpPost("Register")]
         public IActionResult AddFreelancer([FromBody] FreelancerModel model)
         {
-            return Ok();
+            _logger.LogInformation("Freelancer - Start FetchFreelancerDetails");
+            ContentResult content = _freelanceService.AddFreelancer(model);
+            _logger.LogInformation("Freelancer - Exit FetchFreelancerDetails");
+            return content;
         }
 
         [HttpPut("{FreelancerId}")]
@@ -48,9 +56,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{FreelancerId}")]
-        public IActionResult Delete(int FreelancerId)
+        public IActionResult DeleteFreelancer(int FreelancerId)
         {
-            return Ok();
+            _logger.LogInformation("Freelancer - Start DeleteFreelancer");
+            ContentResult content = _freelanceService.DeleteFreelancer(FreelancerId);
+            _logger.LogInformation("Freelancer - Exit DeleteFreelancer");
+            return content;
         }
     }
 }
