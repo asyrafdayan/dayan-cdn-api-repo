@@ -12,6 +12,8 @@
 > 2. CD into the project directory
 > 3. Make sure Docker Desktop is running
 > 4. run command: docker-compose up -d
+> 5. Ensure containers are running
+![Seq](./Assets/Docker.png)
 > 5. Open URL : [Swagger](http://localhost:5001/swagger/index.html)
 
 
