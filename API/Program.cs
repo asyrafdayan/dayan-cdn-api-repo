@@ -4,8 +4,17 @@ using API.Middleware;
 using API.Models;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Serilog config
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(new ConfigurationBuilder()
+        .AddJsonFile($"serilog-config.{builder.Environment.EnvironmentName}.json")
+        .Build())
+    .Enrich.FromLogContext()
+    .CreateLogger();
 
 builder.Services.Configure<AppSettingsModel>(builder.Configuration.GetSection("AppSettings"));
 
@@ -20,6 +29,10 @@ builder.Services.AddSwaggerGen();
 
 // Register services
 builder.Services.AddScoped<IFreelance, FreelanceService>();
+
+// Remove default Logger and replace with Serilog
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 // Exception Handler
 builder.Services.AddExceptionHandler<ExceptionMiddleware>();
