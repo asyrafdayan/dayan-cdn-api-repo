@@ -8,13 +8,16 @@ using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Net;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text.Json;
 
 namespace API.Services
 {
-    public class FreelanceService(ILogger<FreelanceService> logger, DevContext context) : IFreelance
+    public class FreelanceService(ILogger<FreelanceService> logger, DevContext context, IRedisService redisService) : IFreelance
     {
         private readonly ILogger<FreelanceService> _logger = logger;
         private readonly DevContext _context = context;
+        private readonly IRedisService _redisService = redisService;
 
         public ContentResult AddFreelancer(FreelancerModel model)
         {
@@ -182,28 +185,35 @@ namespace API.Services
         {
             _logger.LogInformation("FreelanceService - Starting GetFreelancerDetail");
             
-            FreelancerModel freelancer = new();
+            FreelancerModel? freelancer = new();
 
             try
             {
-                TblFreelancerMst? tfm = _context.TblFreelancerMsts
-                    .Where(e => e.Id == freelancerId)
-                    .FirstOrDefault();
 
-                if (tfm == null)
+                freelancer = _redisService.GetData<FreelancerModel>(RedisKeysConstants.FREELANCER_DETAIL_BY_ID + freelancerId);
+
+                if (freelancer == null)
                 {
-                    throw new NotFoundException(ErrorMessageConstants.ERR_USER_NOT_FOUND);
-                }
-                
-                List<TblSkill> skills = _context.TblSkills
-                    .Where(e => e.FreelancerId == freelancerId)
-                    .ToList();
+                    TblFreelancerMst? tfm = _context.TblFreelancerMsts
+                        .Where(e => e.Id == freelancerId)
+                        .FirstOrDefault() ?? throw new NotFoundException(ErrorMessageConstants.ERR_USER_NOT_FOUND);
 
-                freelancer.Username = tfm.Username;
-                freelancer.Email = tfm.Email;
-                freelancer.Hobby = tfm.Hobby;
-                freelancer.PhoneNumber = tfm.Phonenumber;
-                skills.ForEach(e => { freelancer.SkillSets.Add(e.Skill); });
+                    List<TblSkill>? skills = _context.TblSkills
+                        .Where(e => e.FreelancerId == freelancerId)
+                        .ToList();
+
+                    FreelancerModel freelancerModel = new()
+                    {
+                        Username = tfm.Username,
+                        Email = tfm.Email,
+                        Hobby = tfm.Hobby,
+                        PhoneNumber = tfm.Phonenumber,
+                        SkillSets = skills.Select(e => e.Skill).ToList()
+                    };
+
+                    freelancer = freelancerModel;
+                    bool? saved = _redisService.SetData(RedisKeysConstants.FREELANCER_DETAIL_BY_ID + freelancerId, freelancer);
+                }
             }
             catch (Exception ex)
             {
