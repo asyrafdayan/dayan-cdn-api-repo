@@ -6,24 +6,18 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FreelancerController : ControllerBase
+    public class FreelancerController(ILogger<FreelancerController> logger, IFreelance freelanceService) : ControllerBase
     {
 
-        private readonly ILogger<FreelancerController> _logger;
-        private readonly IFreelance _freelanceService;
-
-        public FreelancerController(ILogger<FreelancerController> logger, IFreelance freelanceService) 
-        {
-            _logger = logger;
-            _freelanceService = freelanceService;
-        }
+        private readonly ILogger<FreelancerController> _logger = logger;
+        private readonly IFreelance _freelanceService = freelanceService;
 
         [HttpGet]
-        public IActionResult FetchAllFreelancers()
+        public IActionResult FetchAllFreelancers([FromQuery] string? Username, [FromQuery] bool SortDesc = false)
         {
             _logger.LogInformation("Freelancer - Start FetchAllFreelancers");
 
-            ContentResult content = _freelanceService.GetAllFreelancer();
+            ContentResult content = _freelanceService.GetAllFreelancer(Username, SortDesc);
 
             _logger.LogInformation("Freelancer - Exit FetchAllFreelancers");
             return content;
@@ -50,9 +44,12 @@ namespace API.Controllers
         }
 
         [HttpPut("{FreelancerId}")]
-        public IActionResult Put(int FreelancerId, [FromBody] FreelancerModel model)
+        public IActionResult UpdateFreelancer(int FreelancerId, [FromBody] FreelancerModel model)
         {
-            return Ok();
+            _logger.LogInformation("Freelancer - Start UpdateFreelancer");
+            ContentResult content = _freelanceService.UpdateFreelancerDetail(FreelancerId, model);
+            _logger.LogInformation("Freelancer - Exit UpdateFreelancer");
+            return content;
         }
 
         [HttpDelete("{FreelancerId}")]

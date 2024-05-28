@@ -6,9 +6,7 @@ using API.Interfaces;
 using API.Models;
 using API.Utils;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Text.Json;
 
 namespace API.Services
@@ -74,6 +72,7 @@ namespace API.Services
                                         tfm.Username,
                                         tfm.Email,
                                         tfm.Phonenumber,
+                                        tfm.Hobby,
                                         skill = ts! != null ? ts.Skill : null
                                     };
 
@@ -85,6 +84,7 @@ namespace API.Services
                         Username = insertedFreelancerDetails.First().Username,
                         Email = insertedFreelancerDetails.First().Email,
                         PhoneNumber = insertedFreelancerDetails.First().Phonenumber,
+                        Hobby = insertedFreelancerDetails.First().Hobby,
                         SkillSets = insertedFreelancerDetails.Select(s => s.skill).ToList()
                     };
 
@@ -93,8 +93,9 @@ namespace API.Services
                     res.Result = freelancerModel;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError($"Exception: {ex.Message}");
                 throw;
             }
             finally
@@ -153,7 +154,7 @@ namespace API.Services
             return CommonUtils.jsonResponse(res);
         }
 
-        public ContentResult GetAllFreelancer()
+        public ContentResult GetAllFreelancer(string? username, bool sortDesc = false)
         {
             _logger.LogInformation("FreelanceService - Starting GetFreelancerDetail");
 
@@ -161,13 +162,27 @@ namespace API.Services
 
             try
             {
-                List<FreelancerModel> freelancers = _context.TblFreelancerMsts
-                    .Where(f => f.Deleted == 0)
+                var query = _context.TblFreelancerMsts
+                    .Where(f => f.Deleted == 0);
+
+
+                if (!string.IsNullOrEmpty(username))
+                {
+                    query = query.Where(f => f.Username.StartsWith(username));
+                }
+
+                if (sortDesc == true)
+                {
+                    query = query.OrderByDescending(f => f.Username);
+                }
+
+                List<FreelancerModel> freelancers = query
                     .Select(f => new FreelancerModel
                     {
                         Id = f.Id,
                         Username = f.Username,
                         Email = f.Email,
+                        Hobby = f.Hobby,
                         PhoneNumber = f.Phonenumber
                     }).ToList();
 
@@ -239,7 +254,89 @@ namespace API.Services
 
         public ContentResult UpdateFreelancerDetail(int freelancerId, FreelancerModel model)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation("FreelanceService - Starting UpdateFreelancerDetail");
+
+            ResultDTO res = new();
+
+            try
+            {
+                TblFreelancerMst? freelancerDetail = _context.TblFreelancerMsts.Where(e => e.Id == freelancerId).FirstOrDefault();
+
+                if (freelancerId == 0 || freelancerDetail == null)
+                {
+                    throw new NotFoundException(ErrorMessageConstants.ERR_USER_NOT_FOUND);
+                }
+                else
+                {
+                    freelancerDetail.Hobby = model.Hobby;
+                    freelancerDetail.Email = model.Email;
+                    freelancerDetail.Phonenumber = model.PhoneNumber;
+                }
+
+                List<TblSkill> skills = _context.TblSkills.Where(e => e.FreelancerId == freelancerId).ToList();
+                
+                _context.TblSkills.RemoveRange(skills);
+                
+                if (model.SkillSets.Count > 0)
+                {
+
+                    List<TblSkill> newSkills = new();
+
+                    foreach (var s in model.SkillSets)
+                    {
+                        TblSkill sk = new()
+                        {
+                            FreelancerId = freelancerId,
+                            Skill = s
+                        };
+
+                        newSkills.Add(sk);
+                    }
+
+                    _context.TblSkills.AddRange(newSkills);
+                }
+
+                _context.SaveChanges();
+
+                var queryRes = from tfm in context.TblFreelancerMsts
+                               join ts in context.TblSkills
+                               on tfm.Id equals ts.FreelancerId into freelancerSkills
+                               from ts in freelancerSkills.DefaultIfEmpty()
+                               where tfm.Id.Equals(freelancerDetail.Id)
+                               select new
+                               {
+                                   tfm.Id,
+                                   tfm.Username,
+                                   tfm.Email,
+                                   tfm.Phonenumber,
+                                   tfm.Hobby,
+                                   skill = ts! != null ? ts.Skill : null
+                               };
+
+                var updatedFreelancerDetails = queryRes.ToList();
+
+                FreelancerModel freelancerModel = new()
+                {
+                    Id = updatedFreelancerDetails.First().Id,
+                    Username = updatedFreelancerDetails.First().Username,
+                    Email = updatedFreelancerDetails.First().Email,
+                    PhoneNumber = updatedFreelancerDetails.First().Phonenumber,
+                    Hobby = updatedFreelancerDetails.First().Hobby,
+                    SkillSets = updatedFreelancerDetails.Select(s => s.skill).ToList()
+                };
+
+                res.StatusCode = (int)HttpStatusCode.OK;
+                res.Remark = "Freelancer information updated";
+                res.Result = freelancerModel;
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError($"Exception : {ex.Message}");
+                throw; 
+            }
+
+            _logger.LogInformation("FreelanceService - Exit UpdateFreelancerDetail");
+            return CommonUtils.jsonResponse(res);
         }
     }
 }
