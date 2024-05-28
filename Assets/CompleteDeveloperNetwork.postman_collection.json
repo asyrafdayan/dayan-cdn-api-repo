@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "943d8cbd-5739-4223-997e-2cad7328e2d4",
+		"name": "CompleteDeveloperNetwork",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3843589"
+	},
+	"item": [
+		{
+			"name": "Register New Freelancer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"UserName\": \"Test3\",\r\n    \"Email\": \"Test3@email.com\",\r\n    \"PhoneNumber\": \"60123456789\",\r\n    \"SkillSets\": [\r\n        \"Kotlin\"\r\n    ],\r\n    \"Hobby\": \"Boxing\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5001/api/Freelancer/Register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"Freelancer",
+						"Register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Freelancer Info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5001/api/Freelancer/503",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"Freelancer",
+						"503"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Freelancer",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5001/api/Freelancer/503",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"Freelancer",
+						"503"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Freelancers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5001/api/Freelancer?username=Test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"Freelancer"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "Test"
+						},
+						{
+							"key": "sortdesc",
+							"value": "true",
+							"description": "Sorts based on username",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Freelancer",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"UserName\": \"Krystina\",\r\n    \"Email\": \"Krystina2@email.com\",\r\n    \"PhoneNumber\": \"60184726709\",\r\n    \"SkillSets\": [\r\n        \"Java\",\r\n        \"CSS\",\r\n        \"C#\"\r\n    ],\r\n    \"Hobby\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5001/api/Freelancer/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"Freelancer",
+						"2"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

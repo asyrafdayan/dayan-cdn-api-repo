@@ -14,8 +14,9 @@
 > 4. run command: docker-compose up -d
 > 5. Ensure containers are running
 ![Seq](./Assets/Docker.png)
-> 5. Open URL : [Swagger](http://localhost:5001/swagger/index.html)
-
+> 6. Open URL : [Swagger](http://localhost:5001/swagger/index.html)
+> ### OPTIONAL
+> 7.  Import Postman collection located in Assets/**CompleteDeveloperNetwork.postman_collection.json**
 
 ## Description
 - Database - SQLite
