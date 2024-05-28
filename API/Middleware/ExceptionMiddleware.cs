@@ -30,6 +30,12 @@ namespace API.Middleware
                 resDTO.StatusCode = (int)HttpStatusCode.NotFound;
             }
 
+            if (exception is UserExistsException || exception is InvalidModelException)
+            {
+                resDTO.StatusCode = (int)HttpStatusCode.BadRequest;
+            }
+
+
             httpContext.Response.StatusCode = resDTO.StatusCode;
 
             await httpContext.Response.WriteAsJsonAsync(resDTO, cancellationToken);

@@ -13,11 +13,11 @@ namespace API.Controllers
         private readonly IFreelance _freelanceService = freelanceService;
 
         [HttpGet]
-        public IActionResult FetchAllFreelancers([FromQuery] string? Username, [FromQuery] bool SortDesc = false)
+        public IActionResult FetchAllFreelancers([FromQuery] string? username, [FromQuery] bool sortdesc = false)
         {
             _logger.LogInformation("Freelancer - Start FetchAllFreelancers");
 
-            ContentResult content = _freelanceService.GetAllFreelancer(Username, SortDesc);
+            ContentResult content = _freelanceService.GetAllFreelancer(username, sortdesc);
 
             _logger.LogInformation("Freelancer - Exit FetchAllFreelancers");
             return content;

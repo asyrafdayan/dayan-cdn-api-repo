@@ -21,13 +21,25 @@ namespace API.Services
         {
             _logger.LogInformation("FreelanceService - Starting AddFreelancer");
 
-            ResultDTO res = new()
-            {
-                StatusCode = (int)HttpStatusCode.OK,
-            };
+            ResultDTO res = new();
             using var context = _context;
+
             try
             {
+                if (string.IsNullOrEmpty(model.Username)
+                    || string.IsNullOrEmpty(model.Email))
+                {
+                    throw new InvalidModelException(ErrorMessageConstants.ERR_INVALID_MODEL);
+                }
+
+                // Check if Username exists
+                TblFreelancerMst? checkUsername = _context.TblFreelancerMsts.Where(e => e.Username == model.Username).FirstOrDefault();
+
+                if (checkUsername != null)
+                {
+                    throw new UserExistsException(ErrorMessageConstants.ERR_USER_ALREADY_EXISTS);
+                }
+
                 TblFreelancerMst freelancer = new()
                 {
                     Username = model.Username!,
@@ -119,11 +131,14 @@ namespace API.Services
 
             try
             {
+                // Fetch freelancer information
+                TblFreelancerMst? freelancerDetail = _context.TblFreelancerMsts
+                    .Where(e => e.Id == freelancerId)
+                    .FirstOrDefault() 
+                    ?? throw new NotFoundException(ErrorMessageConstants.ERR_USER_NOT_FOUND);
+
                 // Delete from Redis Cache (If it exists)
                 _redisService.DeleteData(RedisKeysConstants.FREELANCER_DETAIL_BY_ID + freelancerId);
-
-                // Fetch freelancer info
-                TblFreelancerMst? freelancerDetail = _context.TblFreelancerMsts.Where(e => e.Id == freelancerId).FirstOrDefault();
 
                 // Fetch skills
                 List<TblSkill> freelancerSkills = _context.TblSkills.Where(e => e.FreelancerId == freelancerId).ToList();
@@ -138,19 +153,16 @@ namespace API.Services
                     _context.TblFreelancerMsts.Remove(freelancerDetail);
                 }
 
+                _context.SaveChanges();
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Exception: {ex.Message}");
-                res.StatusCode = (int)HttpStatusCode.InternalServerError;
-            }
-            finally
-            {
-                _context.SaveChanges();
-                _logger.LogInformation("FreelanceService - Exit GetFreelancerDetail");
+                throw;
             }
 
-            
+            _logger.LogInformation("FreelanceService - Exit GetFreelancerDetail");
             return CommonUtils.jsonResponse(res);
         }
 
@@ -260,9 +272,16 @@ namespace API.Services
 
             try
             {
+                if (freelancerId == 0 
+                    || string.IsNullOrEmpty(model.Username)
+                    || string.IsNullOrEmpty(model.Email))
+                {
+                    throw new InvalidModelException(ErrorMessageConstants.ERR_INVALID_MODEL);
+                }
+
                 TblFreelancerMst? freelancerDetail = _context.TblFreelancerMsts.Where(e => e.Id == freelancerId).FirstOrDefault();
 
-                if (freelancerId == 0 || freelancerDetail == null)
+                if (freelancerDetail == null)
                 {
                     throw new NotFoundException(ErrorMessageConstants.ERR_USER_NOT_FOUND);
                 }
